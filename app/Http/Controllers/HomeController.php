@@ -3,110 +3,49 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use Faker\Factory;
-use Faker\Generator;
-use Illuminate\Support\Collection;
-use Plexikon\Kernel\Model\Account\Command\AccountChangeEmail;
-use Plexikon\Kernel\Model\Account\Command\AccountChangeName;
-use Plexikon\Kernel\Model\Account\Command\AccountChangePassword;
+use App\User;
+use Illuminate\Support\Facades\Auth;
 use Plexikon\Kernel\Model\Account\Command\MarkAccountAsEnabled;
 use Plexikon\Kernel\Model\Account\Command\RegisterAccount;
-use Plexikon\Kernel\Model\Account\Query\PaginateAccounts;
+use Plexikon\Kernel\Model\Account\Value\AccountId;
 use Plexikon\Kernel\Projection\Customer\AccountModel;
 use Plexikon\Reporter\CommandPublisher;
-use Plexikon\Reporter\QueryPublisher;
-use Plexikon\Reporter\Support\HasPromiseHandler;
 
 final class HomeController
 {
-    use HasPromiseHandler;
-
-    private string $currentPassword = 'password123';
-
-    public function __invoke(CommandPublisher $publisher, QueryPublisher $queryPublisher, Factory $factory)
+    public function __invoke(CommandPublisher $publisher)
     {
-        $faker = Factory::create();
-//        $accounts = $this->getAccounts();
-//        $accounts->each(function (AccountModel $model) use ($publisher, $faker) {
-//            $this->updateAccount($publisher, $faker, $model->getId()->getValue());
-//        });
+//        $publisher->dispatch(MarkAccountAsEnabled::withData('869cd82b-b925-4e70-8eb3-f3ebc9f61045'));
+//
+//        dd(AccountModel::where('email', 'plexikon@gmail.com')->first()->toArray());
 
-//        return $accounts;
-        $start = microtime(true);
+       // $this->registerMe();
+        // $this->loginMe();
+        // Auth::logout();
+        dump(Auth::user());
 
-        $i = 20;
-        $ids = [];
-
-        while ($i !== 0) {
-            $ids [] = $accountId = $faker->uuid;
-            $this->seed($publisher, $faker, $accountId);
-            $i--;
-        }
-
-        foreach ($ids as $id) {
-            $this->enableAccount($publisher, $id);
-        }
-
-
-//        foreach ($ids as $id) {
-//            $this->updateAccount($publisher, $faker, $id);
-//        }
-
-        return ('elapsed time: ' . (microtime(true) - $start));
+        return 'home';
     }
 
-    private function seed(CommandPublisher $publisher, Generator $faker, string $accountId): void
+    private function registerMe(): void
     {
-        $publisher->dispatch(
-            RegisterAccount::withData(
-                $accountId,
-                $faker->email,
-                $this->getSafeFirstName($faker),
-                $this->currentPassword,
-                $this->currentPassword,
-            )
-        );
-    }
+        $publisher = app(CommandPublisher::class);
 
-    private function enableAccount(CommandPublisher $publisher, string $accountId): void
-    {
+        $publisher->dispatch(RegisterAccount::withData(
+            $accountId = AccountId::create()->toString(),
+            'plexikon@gmail.com',
+            'plexikon',
+            "password123",
+            "password1234",
+        ));
+
         $publisher->dispatch(MarkAccountAsEnabled::withData($accountId));
     }
 
-    private function updateAccount(CommandPublisher $publisher, Generator $faker, string $accountId): void
+    public function loginMe(): void
     {
-        $publisher->dispatch(AccountChangeEmail::withData($accountId, $faker->email));
+        $user = User::where('email', 'plexikon@gmail.com')->first();
 
-        $publisher->dispatch(AccountChangeName::withData(
-            $accountId, $this->getSafeFirstName($faker)
-        ));
-
-        $publisher->dispatch(AccountChangePassword::withData(
-            $accountId, $this->currentPassword, 'password1234', 'password1234'
-        ));
-
-        $publisher->dispatch(AccountChangePassword::withData(
-            $accountId, 'password1234', $this->currentPassword, $this->currentPassword
-        ));
-    }
-
-    private function getAccounts(): Collection
-    {
-        return $this->handlePromise(
-            app(QueryPublisher::class)->dispatch(
-                new PaginateAccounts(100)
-            )
-        )->getCollection();
-    }
-
-    private function getSafeFirstName(Generator $faker): string
-    {
-        $name = $faker->firstName;
-
-        if (strlen($name) < 5) {
-            $name .= '-foo';
-        }
-
-        return $name;
+        Auth::login($user);
     }
 }

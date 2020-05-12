@@ -17,7 +17,8 @@
         "laravel/tinker": "^2.0",
         "plexikon/chronicle": "dev-develop",
         "plexikon/dev-kernel": "dev-master",
-        "plexikon/reporter": "dev-develop"
+        "plexikon/reporter": "dev-develop",
+      "ext-pcntl": "*"
     },
     "require-dev": {
         "facade/ignition": "^2.0",

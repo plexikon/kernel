@@ -2,6 +2,8 @@
 
 namespace App\Console;
 
+use App\Auth\AuthReadModelProjection;
+use App\Console\App\SeedAccountCommand;
 use App\Console\Util\ReadModelWorkersCommand;
 use App\Console\Util\ResetAppCommand;
 use Illuminate\Console\Scheduling\Schedule;
@@ -11,7 +13,8 @@ class Kernel extends ConsoleKernel
 {
     protected $commands = [
         ResetAppCommand::class,
-
+        SeedAccountCommand::class,
+        AuthReadModelProjection::class,
         ReadModelWorkersCommand::class,
     ];
 

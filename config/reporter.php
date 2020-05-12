@@ -97,7 +97,7 @@ return [
 
         'command' => [
             'default' => [
-                'route_strategy' => 'async_all',
+                'route_strategy' => 'per_message',
                 'handler_method' => 'command',
                 'message' => [
                     'decorator' => []
